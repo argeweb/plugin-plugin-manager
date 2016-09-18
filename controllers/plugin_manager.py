@@ -25,12 +25,11 @@ class PluginManager(Controller):
     def admin_get_url(self):
         self.meta.change_view('json')
         can_disable_plugins_list = []
-        all_installed = self.plugins_all
         plugin = self.params.get_string("plugin", '')
         action = self.params.get_string("action", '')
         enable_plugins_list = self.settings.get_plugins(self.server_name, self.namespace)
 
-        for item in all_installed:
+        for item in self.plugins_all:
             try:
                 if self.uri_exists_with_permission('admin:' + item + ":plugins_check"):
                     can_disable_plugins_list.append(item)
@@ -39,25 +38,20 @@ class PluginManager(Controller):
         if plugin not in can_disable_plugins_list:
             self.context['data'] = {'info': "403", "plugin": plugin}
             return
-
-        module_path = 'plugins.%s' % plugin
-        try:
-            module = __import__('%s' % module_path, fromlist=['*'])
-            cls = getattr(module, 'plugins_helper')
-            if "plugins_controller" in cls:
-                plugins_controller_list = cls["plugins_controller"].split(",")
-                if action == u"enable":
-                    for plugins_loop_item in plugins_controller_list:
-                        if plugins_loop_item not in enable_plugins_list:
-                            enable_plugins_list.append(plugins_loop_item)
-                else:
-                    for plugins_loop_item in plugins_controller_list:
-                        if plugins_loop_item in enable_plugins_list and plugin in can_disable_plugins_list:
-                            enable_plugins_list.remove(plugins_loop_item)
-        except:
-            self.logging.debug("Plugins %s helper not found, skipping" % plugin)
+        from argeweb.core.plugins import get_plugin_controller
+        if action == u"enable":
+            for loop_item in get_plugin_controller(plugin):
+                item = loop_item.split(".")[-1]
+                if item not in enable_plugins_list:
+                    enable_plugins_list.append(item)
+        else:
+            for loop_item in get_plugin_controller(plugin):
+                item = loop_item.split(".")[-1]
+                if item in enable_plugins_list and plugin in can_disable_plugins_list:
+                    enable_plugins_list.remove(item)
         self.settings.set_plugins(self.server_name, self.namespace, enable_plugins_list)
         self.context['data'] = {'info': "done", "plugin": plugin}
+
 
     @route_menu(list_name=u"backend", text=u"模組管理", sort=9994, icon="gears", group=u"系統設定")
     @route_with('/admin/plugin_manager/pickup_list')
