@@ -1,0 +1,17 @@
+{
+  "name": "plugin_manager",
+  "homepage": "https://github.com/argeweb/plugin-plugin-manager",
+  "authors": [
+    "cwen0708 <cwen0708@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
