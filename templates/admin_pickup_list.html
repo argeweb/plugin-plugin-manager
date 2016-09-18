@@ -1,0 +1,81 @@
+{% import "backend/macros.html" as s with context %}
+{% extends s.layout() %}
+
+{% block layout_content %}
+{% set list = context[scaffolding.plural] %}
+<div class="ibox-content m-b-sm border-bottom">
+    <div class="p-xs">
+        <div class="pull-left m-r-md">
+            <i class="fa fa-cubes text-navy mid-icon"></i>
+        </div>
+        <h2>模組管理</h2>
+        <span>您可以自由啟用或停用您所需的功能。</span>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+<div class="ibox-content forum-container">
+    {%- set n = 0 -%}
+    {% for item in plugin_list %}
+        {%- set n = n + 1 -%}
+    <div class="forum-item plugins-item" data-enable="{{item.enable}}" id="plugin-{{ item.name }}">
+        <div class="row">
+            <div class="col-xs-9">
+                <div class="forum-icon hidden-xs">
+                    <i class="fa fa-{{ item.icon }}"></i>
+                </div>
+                <span class="forum-item-title">{{ item.title }}</span>
+                <div class="forum-sub-title">{{ item.desc }}</div>
+            </div>
+            <div class="col-xs-3 btn-group">
+                {% if uri_exists_with_permission("admin:" + item.name + ":plugins_check") %}
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable" class="btn-json btn btn-lg btn-enable" data-callback="enable_plugins">啟用</a>
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable" class="btn-json btn btn-lg btn-disable" data-callback="disable_plugins">停用</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}
+{% block layout_scripts -%}
+<script>
+    $(function(){
+        $(".plugins-item").each(function(){
+            toggle_class($(this), $(this).data("enable")=="True");
+        });
+    });
+    function toggle_class(target, enable){
+        if (enable){
+            target.find(".btn-enable").addClass("btn-success").removeClass("btn-default");
+            target.find(".btn-disable").addClass("btn-default").removeClass("btn-success");
+            target.addClass("active");
+        }else{
+            target.find(".btn-enable").addClass("btn-default").removeClass("btn-success");
+            target.find(".btn-disable").addClass("btn-success").removeClass("btn-default");
+            target.removeClass("active");
+        }
+    }
+    function enable_plugins(data){
+        if (data.info == "done"){
+            toggle_class($("#plugin-" + data.plugin), true);
+            backend.message.quick_info("已啟用");
+        }
+        if (data.info == "403"){
+            backend.message.quick_info("權限不足");
+            location.reload();
+        }
+    }
+    function disable_plugins(data){
+        if (data.info == "done"){
+            toggle_class($("#plugin-" + data.plugin), false);
+            backend.message.quick_info("已停用");
+        }
+        if (data.info == "403"){
+            backend.message.quick_info("權限不足");
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}
