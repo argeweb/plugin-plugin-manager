@@ -28,7 +28,7 @@
                 <div class="forum-sub-title">{{ item.desc }}</div>
             </div>
             <div class="col-xs-3 btn-group">
-                {% if uri_exists_with_permission("admin:" + item.name + ":plugins_check") %}
+                {% if item.can_enable %}
                 <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable" class="btn-json btn btn-lg btn-enable" data-callback="enable_plugins">啟用</a>
                 <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable" class="btn-json btn btn-lg btn-disable" data-callback="disable_plugins">停用</a>
                 {% endif %}

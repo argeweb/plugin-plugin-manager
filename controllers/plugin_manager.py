@@ -24,32 +24,21 @@ class PluginManager(Controller):
     @route_with('/admin/plugin_manager/set.json')
     def admin_get_url(self):
         self.meta.change_view('json')
-        can_disable_plugins_list = []
         plugin = self.params.get_string("plugin", '')
         action = self.params.get_string("action", '')
-        enable_plugins_list = self.settings.get_plugins(self.server_name, self.namespace)
+        enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
+        prohibited_actions = self.prohibited_actions
 
-        for item in self.plugins_all:
-            try:
-                if self.uri_exists_with_permission('admin:' + item + ":plugins_check"):
-                    can_disable_plugins_list.append(item)
-            except:
-                self.logging.debug("Plugins %s no permission, skipping" % item)
-        if plugin not in can_disable_plugins_list:
+        if "admin:"+plugin+":plugins_check" in prohibited_actions:
             self.context['data'] = {'info': "403", "plugin": plugin}
             return
-        from argeweb.core.plugins import get_plugin_controller
         if action == u"enable":
-            for loop_item in get_plugin_controller(plugin):
-                item = loop_item.split(".")[-1]
-                if item not in enable_plugins_list:
-                    enable_plugins_list.append(item)
+            if plugin not in enable_plugins_list:
+                enable_plugins_list.append(plugin)
         else:
-            for loop_item in get_plugin_controller(plugin):
-                item = loop_item.split(".")[-1]
-                if item in enable_plugins_list and plugin in can_disable_plugins_list:
-                    enable_plugins_list.remove(item)
-        self.settings.set_plugins(self.server_name, self.namespace, enable_plugins_list)
+            if plugin in enable_plugins_list:
+                enable_plugins_list.remove(plugin)
+        self.plugins.set_enable_plugins_to_db(self.server_name, self.namespace, enable_plugins_list)
         self.context['data'] = {'info': "done", "plugin": plugin}
 
 
@@ -58,18 +47,16 @@ class PluginManager(Controller):
     def admin_pickup_list(self):
         scaffold.list(self)
         plugin_list = []
-        enable_plugins_list = self.settings.get_plugins(self.server_name, self.namespace)
-        self.logging.info(self.plugins_all)
-        for item in self.plugins_all:
+        enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
+        prohibited_actions = self.prohibited_actions
+        for item in self.plugins.get_all_plugin():
             module_path = 'plugins.%s' % item
             try:
                 module = __import__('%s' % module_path, fromlist=['*'])
                 cls = getattr(module, 'plugins_helper')
                 cls["name"] = item
-                if item in enable_plugins_list:
-                    cls["enable"] = True
-                else:
-                    cls["enable"] = False
+                cls["enable"] = True if item in enable_plugins_list else False
+                cls["can_enable"] = False if "admin:"+item+":plugins_check" in prohibited_actions else True
                 if "icon" not in cls:
                     cls["icon"] = "cube"
                 plugin_list.append(cls)
