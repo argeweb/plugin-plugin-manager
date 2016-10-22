@@ -7,9 +7,16 @@
 # Date: 2015/7/12.
 
 
-plugin_manager_action_helper = {
-    "group": u"模組",
-    "actions": [
-        {"action": "pickup_list", "name": u"模組管理"}
-    ]
+plugins_helper = {
+    "title": u"模組管理",
+    "desc": u"啟用或停用特定功能模組",
+    "controllers": {
+        "old_case": {
+            "group": u"模組管理",
+            "actions": [
+                {"action": "pickup_list", "name": u"進入模組管理畫面"},
+                {"action": "plugins_check", "name": u"啟用停用模組"},
+            ]
+        }
+    }
 }
