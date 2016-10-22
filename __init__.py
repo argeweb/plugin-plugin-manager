@@ -11,7 +11,7 @@ plugins_helper = {
     "title": u"模組管理",
     "desc": u"啟用或停用特定功能模組",
     "controllers": {
-        "old_case": {
+        "plugin_manager": {
             "group": u"模組管理",
             "actions": [
                 {"action": "pickup_list", "name": u"進入模組管理畫面"},
