@@ -49,7 +49,7 @@ class PluginManager(Controller):
         plugin_list = []
         enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
         prohibited_actions = self.prohibited_actions
-        for item in self.plugins.get_all_plugin():
+        for item in self.plugins.get_all_plugin(False):
             module_path = 'plugins.%s' % item
             try:
                 module = __import__('%s' % module_path, fromlist=['*'])
