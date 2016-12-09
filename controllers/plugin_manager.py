@@ -41,8 +41,7 @@ class PluginManager(Controller):
         self.plugins.set_enable_plugins_to_db(self.server_name, self.namespace, enable_plugins_list)
         self.context['data'] = {'info': "done", "plugin": plugin}
 
-
-    @route_menu(list_name=u"backend", text=u"模組管理", sort=9994, icon="gears", group=u"系統設定")
+    @route_menu(list_name=u"backend", text=u"模組管理", sort=9953, group=u"系統設定")
     @route_with('/admin/plugin_manager/pickup_list')
     def admin_pickup_list(self):
         scaffold.list(self)
