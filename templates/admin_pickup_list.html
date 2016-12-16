@@ -6,7 +6,7 @@
 <div class="ibox-content m-b-sm border-bottom">
     <div class="p-xs">
         <div class="pull-left m-r-md">
-            <i class="fa fa-cubes text-navy mid-icon"></i>
+            <i class="material-icons mid-icon brand-text-color">dashboard</i>
         </div>
         <h2>模組管理</h2>
         <span>您可以自由啟用或停用您所需的功能。</span>
@@ -18,11 +18,11 @@
     {%- set n = 0 -%}
     {% for item in plugin_list %}
         {%- set n = n + 1 -%}
-    <div class="forum-item plugins-item" data-enable="{{item.enable}}" id="plugin-{{ item.name }}">
+        <div class="forum-item plugins-item" data-enable="{{ item.enable }}" id="plugin-{{ item.name }}">
         <div class="row">
             <div class="col-xs-9">
                 <div class="forum-icon hidden-xs">
-                    <i class="fa fa-{{ item.icon }}"></i>
+                    <i class="material-{{ item.icon }}"></i>
                 </div>
                 <span class="forum-item-title">{{ item.title }}</span>
                 <div class="forum-sub-title">{{ item.desc }}</div>
