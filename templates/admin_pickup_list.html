@@ -14,18 +14,20 @@
 </div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
-<div class="ibox-content forum-container">
+<div class="ibox-content forum-container row" style="margin-left: 0; margin-right: 0;">
     {%- set n = 0 -%}
     {% for item in plugin_list %}
         {%- set n = n + 1 -%}
-        <div class="forum-item plugins-item" data-enable="{{ item.enable }}" id="plugin-{{ item.name }}">
-        <div class="row">
+        <div class="forum-item plugins-item col-xs-12 col-md-6" data-enable="{{ item.enable }}" id="plugin-{{ item.name }}">
+        <div class="row" style="min-height: 81px;">
             <div class="col-xs-9">
                 <div class="forum-icon hidden-xs">
                     <i class="material-{{ item.icon }}"></i>
                 </div>
-                <span class="forum-item-title">{{ item.title }}</span>
-                <div class="forum-sub-title">{{ item.desc }}</div>
+                <span class="forum-item-title" style="padding-left: 10px;">{{ item.title }}</span>
+                <div class="forum-sub-title" style="margin-left: 32px;">
+                    模組名稱 : {{ item.name }}<br>
+                    功能描述 : {{ item.desc }}</div>
             </div>
             <div class="col-xs-3 btn-group">
                 {% if item.can_enable %}
@@ -60,20 +62,20 @@
     function enable_plugins(data){
         if (data.info == "done"){
             toggle_class($("#plugin-" + data.plugin), true);
-            backend.message.quick_info("已啟用");
+            backend.message.snackbar("已啟用");
         }
         if (data.info == "403"){
-            backend.message.quick_info("權限不足");
+            backend.message.snackbar("權限不足");
             location.reload();
         }
     }
     function disable_plugins(data){
         if (data.info == "done"){
             toggle_class($("#plugin-" + data.plugin), false);
-            backend.message.quick_info("已停用");
+            backend.message.snackbar("已停用");
         }
         if (data.info == "403"){
-            backend.message.quick_info("權限不足");
+            backend.message.snackbar("權限不足");
             location.reload();
         }
     }
