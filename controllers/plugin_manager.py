@@ -19,7 +19,7 @@ class PluginManager(Controller):
         pagination_limit = 10
 
     class Scaffold:
-        display_properties_in_list = ('theme_name', 'theme_key')
+        display_in_list = ('theme_name', 'theme_key')
 
     @route_with('/admin/plugin_manager/set.json')
     def admin_get_url(self):
