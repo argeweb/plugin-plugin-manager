@@ -15,7 +15,7 @@ class PluginManagerModel(BasicModel):
     class Meta:
         label_name = {
             'theme_name': u'樣式名稱',
-            'theme_key': u'識別名稱',
+            'theme_key': u'系統編號',
             'exclusive': u'專屬項目',
             'is_enable': u'顯示於前台',
             'content': u'描述 '
