@@ -1,4 +1,4 @@
-{% import "backend/macros.html" as s with context %}{% extends s.layout() %}
+{% extends "backend/list_layout.html" %}
 {% block layout_header %}{% endblock %}
 {% block layout_content %}
 {% set list = context[scaffolding.plural] %}
@@ -19,7 +19,7 @@
         {%- set n = n + 1 -%}
         <div class="forum-item plugins-item col-xs-12 col-md-6" data-enable="{{ item.enable }}" id="plugin-{{ item.name }}">
         <div class="row" style="min-height: 81px;">
-            <div class="col-xs-9">
+            <div class="col-xs-7">
                 <div class="forum-icon hidden-xs">
                     <i class="material-{{ item.icon }}"></i>
                 </div>
@@ -28,11 +28,13 @@
                     模組名稱 : {{ item.name }}<br>
                     功能描述 : {{ item.desc }}</div>
             </div>
-            <div class="col-xs-3 btn-group">
+            <div class="col-xs-5">
+                <div class="pull-right btn-group">
                 {% if item.can_enable %}
-                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable" class="btn-json btn btn-lg btn-enable" data-callback="enable_plugins">啟用</a>
-                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable" class="btn-json btn btn-lg btn-disable" data-callback="disable_plugins">停用</a>
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable" class="btn-json btn btn-enable" data-callback="enable_plugins">啟用</a>
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable" class="btn-json btn btn-disable" data-callback="disable_plugins">停用</a>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -80,3 +82,4 @@
     }
 </script>
 {% endblock %}
+{% block layout_buttons %}{% endblock %}
