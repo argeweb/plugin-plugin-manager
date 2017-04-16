@@ -16,7 +16,6 @@ from google.appengine.api import memcache
 class PluginManager(Controller):
     class Meta:
         pagination_actions = ('list', 'pickup_list',)
-        pagination_limit = 10
 
     class Scaffold:
         display_in_list = ('theme_name', 'theme_key')

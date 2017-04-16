@@ -63,23 +63,22 @@
     function enable_plugins(data){
         if (data.info == "done"){
             toggle_class($("#plugin-" + data.plugin), true);
-            backend.message.snackbar("已啟用");
+            message.snackbar("已啟用");
         }
         if (data.info == "403"){
-            backend.message.snackbar("權限不足");
+            message.snackbar("權限不足");
             location.reload();
         }
     }
     function disable_plugins(data){
         if (data.info == "done"){
             toggle_class($("#plugin-" + data.plugin), false);
-            backend.message.snackbar("已停用");
+            message.snackbar("已停用");
         }
         if (data.info == "403"){
-            backend.message.snackbar("權限不足");
+            message.snackbar("權限不足");
             location.reload();
         }
     }
 </script>
 {% endblock %}
-{% block layout_buttons %}{% endblock %}
