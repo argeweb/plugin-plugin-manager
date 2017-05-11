@@ -7,6 +7,7 @@
 # Date: 2015/7/12.
 
 from google.appengine.api import namespace_manager
+from google.appengine.api import taskqueue
 from argeweb import route_with, route_menu
 from argeweb import Controller, scaffold
 import datetime
@@ -21,10 +22,11 @@ class PluginManager(Controller):
         display_in_list = ('theme_name', 'theme_key')
 
     @route_with('/admin/plugin_manager/set.json')
-    def admin_get_url(self):
+    def admin_set_plugin(self):
         self.meta.change_view('json')
         plugin = self.params.get_string('plugin', '')
         action = self.params.get_string('action', '')
+        uri = self.params.get_string('uri', '')
         enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
         prohibited_actions = self.prohibited_actions
 
@@ -37,7 +39,12 @@ class PluginManager(Controller):
         else:
             if plugin in enable_plugins_list:
                 enable_plugins_list.remove(plugin)
+        if uri is not '':
+            if uri.startswith('taskqueue:') is False:
+                uri = 'taskqueue:' + uri
+            taskqueue.add(url=self.uri(uri), params={'plugin': plugin, 'action': action})
         self.plugins.set_enable_plugins_to_db(self.server_name, self.namespace, enable_plugins_list)
+
         self.context['data'] = {'info': 'done', 'plugin': plugin}
 
     @route_menu(list_name=u'backend', text=u'模組管理', sort=9953, group=u'系統設定')
@@ -53,6 +60,10 @@ class PluginManager(Controller):
                 module = __import__('%s' % module_path, fromlist=['*'])
                 cls = getattr(module, 'plugins_helper')
                 cls['name'] = item
+                if 'install_uri' in item:
+                    cls['install_uri'] = item['install_uri']
+                if 'uninstall_uri' in item:
+                    cls['uninstall_uri'] = item['uninstall_uri']
                 cls['enable'] = True if item in enable_plugins_list else False
                 cls['can_enable'] = False if 'admin:'+item+':plugins_check' in prohibited_actions else True
                 if 'icon' not in cls:

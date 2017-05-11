@@ -31,8 +31,8 @@
             <div class="col-xs-5">
                 <div class="pull-right btn-group">
                 {% if item.can_enable %}
-                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable" class="btn-json btn btn-enable" data-callback="enable_plugins">啟用</a>
-                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable" class="btn-json btn btn-disable" data-callback="disable_plugins">停用</a>
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable&uri={{ item.install_uri }}" class="btn-json btn btn-enable" data-callback="enable_plugins">啟用</a>
+                <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable&uri={{ item.uninstall_uri }}" class="btn-json btn btn-disable" data-callback="disable_plugins">停用</a>
                 {% endif %}
                 </div>
             </div>
