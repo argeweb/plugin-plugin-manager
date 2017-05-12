@@ -40,9 +40,13 @@ class PluginManager(Controller):
             if plugin in enable_plugins_list:
                 enable_plugins_list.remove(plugin)
         if uri is not '':
-            if uri.startswith('taskqueue:') is False:
-                uri = 'taskqueue:' + uri
-            taskqueue.add(url=self.uri(uri), params={'plugin': plugin, 'action': action})
+            try:
+                if uri.startswith('taskqueue:') is False:
+                    uri = 'taskqueue:' + uri
+                self.logging.info(uri)
+                taskqueue.add(url=self.uri(uri), params={'plugin': plugin, 'action': action})
+            except KeyError:
+                pass
         self.plugins.set_enable_plugins_to_db(self.server_name, self.namespace, enable_plugins_list)
 
         self.context['data'] = {'info': 'done', 'plugin': plugin}
