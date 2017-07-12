@@ -1,8 +1,8 @@
 {% extends "backend/list_layout.html" %}
 {% block layout_header %}{% endblock %}
-{% block layout_content %}
 {% set list = context[scaffolding.plural] %}
-<div class="ibox-content m-b-sm border-bottom">
+{% block layout_before_header %}
+<div class="ibox-content m-b-sm border-bottom page-header-big">
     <div class="p-xs">
         <div class="pull-left m-r-md">
             <i class="material-icons mid-icon brand-text-color">dashboard</i>
@@ -11,9 +11,11 @@
         <span>您可以自由啟用或停用您所需的功能。</span>
     </div>
 </div>
+{% endblock %}
 
+{% block layout_content %}
 <div class="wrapper wrapper-content animated fadeInRight">
-<div class="ibox-content forum-container row" style="margin-left: 0; margin-right: 0;">
+<div class="ibox-content forum-container row" style="margin-left: 15px; margin-right: 15px;">
     {%- set n = 0 -%}
     {% for item in plugin_list %}
         {%- set n = n + 1 -%}
