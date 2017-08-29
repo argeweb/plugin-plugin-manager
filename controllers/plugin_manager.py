@@ -6,12 +6,10 @@
 # Web: http://www.yooliang.com/
 # Date: 2015/7/12.
 
-from google.appengine.api import namespace_manager
 from google.appengine.api import taskqueue
+from google.appengine.api import app_identity
 from argeweb import route_with, route_menu
 from argeweb import Controller, scaffold
-import datetime
-from google.appengine.api import memcache
 
 
 class PluginManager(Controller):
@@ -19,7 +17,7 @@ class PluginManager(Controller):
         pagination_actions = ('list', 'pickup_list',)
 
     class Scaffold:
-        display_in_list = ('theme_name', 'theme_key')
+        display_in_list = ['theme_name', 'theme_key']
 
     @route_with('/admin/plugin_manager/set.json')
     def admin_set_plugin(self):
@@ -27,7 +25,7 @@ class PluginManager(Controller):
         plugin = self.params.get_string('plugin', '')
         action = self.params.get_string('action', '')
         uri = self.params.get_string('uri', '')
-        enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
+        enable_plugins_list = self.host_information.plugins_list
         prohibited_actions = self.prohibited_actions
 
         if 'admin:'+plugin+':plugins_check' in prohibited_actions:
@@ -51,28 +49,54 @@ class PluginManager(Controller):
 
         self.context['data'] = {'info': 'done', 'plugin': plugin}
 
-    @route_menu(list_name=u'backend', text=u'模組管理', sort=9953, group=u'系統設定')
-    @route_with('/admin/plugin_manager/pickup_list')
-    def admin_pickup_list(self):
+    @property
+    def allowed_app_ids(self):
+        return [app_identity.get_application_id() + '.appspot.com']
+
+    @route_menu(list_name=u'super_user', text=u'模組管理', sort=1, group=u'模組管理')
+    def admin_list(self):
+        query = self.params.get_string('query', u'')
         scaffold.list(self)
         plugin_list = []
-        enable_plugins_list = self.plugins.get_enable_plugins_from_db(self.server_name, self.namespace)
+        enable_plugins_list = self.host_information.plugins_list
         prohibited_actions = self.prohibited_actions
-        for item in self.plugins.get_all_plugin(False):
-            module_path = 'plugins.%s' % item
-            try:
-                module = __import__('%s' % module_path, fromlist=['*'])
-                cls = getattr(module, 'plugins_helper')
-                cls['name'] = item
-                if 'install_uri' in item:
-                    cls['install_uri'] = item['install_uri']
-                if 'uninstall_uri' in item:
-                    cls['uninstall_uri'] = item['uninstall_uri']
-                cls['enable'] = True if item in enable_plugins_list else False
-                cls['can_enable'] = False if 'admin:'+item+':plugins_check' in prohibited_actions else True
-                if 'icon' not in cls:
-                    cls['icon'] = 'cube'
-                plugin_list.append(cls)
-            except:
-                self.logging.debug('Plugins %s helper not found, skipping' % item)
+        the_same_domain = False
+        if self.server_name in self.allowed_app_ids or self.server_name.find('@'):
+            the_same_domain = True
+        for target_type in ['application', 'plugins']:
+            for item in self.get_plugin_name_list_with_type(target_type):
+                try:
+                    module_path = '%s.%s' % (target_type, item)
+                    if module_path == 'plugins.host_information' and the_same_domain is False:
+                        continue
+                    cls = getattr(__import__('%s' % module_path, fromlist=['*']), 'plugins_helper')
+                    cls['name'] = module_path
+                    cls['icon'] = cls['icon'] if 'icon' in cls else 'cube'
+                    cls['enable'] = True if module_path in enable_plugins_list else False
+                    cls['can_enable'] = False if 'admin:'+item+':plugins_check' in prohibited_actions else True
+
+                    if self.cls_has_query_keyword(cls, query):
+                        plugin_list.append(cls)
+                except:
+                    self.logging.debug('%s %s helper not found, skipping' % (target_type, item))
         self.context['plugin_list'] = plugin_list
+
+    @staticmethod
+    def cls_has_query_keyword(cls, query):
+        need_append = False
+        for k, v in cls.items():
+            kv = k.find(query)
+            if isinstance(v, basestring) and kv + v.find(query) > -2:
+                need_append = True
+        return need_append
+
+    def get_plugin_name_list_with_type(self, target_type='plugins', use_cache=True):
+        """
+        取得所有的 controller
+        """
+        c = self.plugins.get_all_controller_with_type(target_type, use_cache)
+        b = [item.split('.')[1] if item.find('.') > 0 else item for item in c]
+        c = list(set(b))
+        c.sort(key=b.index)
+        return c
+

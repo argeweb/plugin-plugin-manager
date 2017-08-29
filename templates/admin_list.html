@@ -1,8 +1,7 @@
 {% extends "backend/list_layout.html" %}
-{% block layout_header %}{% endblock %}
 {% set list = context[scaffolding.plural] %}
-{% block layout_before_header %}
-<div class="ibox-content m-b-sm border-bottom page-header-big">
+{% block page_big_header %}
+<div class="ibox-content m-b-sm border-bottom page-big-header">
     <div class="p-xs">
         <div class="pull-left m-r-md">
             <i class="material-icons mid-icon brand-text-color">dashboard</i>
@@ -13,15 +12,16 @@
 </div>
 {% endblock %}
 
-{% block layout_content %}
-<div class="wrapper wrapper-content animated fadeInRight">
+{% block page_header %}{% endblock %}
+
+{% block page_content %}
 <div class="ibox-content forum-container row" style="margin-left: 15px; margin-right: 15px;">
     {%- set n = 0 -%}
     {% for item in plugin_list %}
         {%- set n = n + 1 -%}
-        <div class="forum-item plugins-item col-xs-12 col-md-6" data-enable="{{ item.enable }}" id="plugin-{{ item.name }}">
+        <div class="forum-item plugins-item col-xs-12 col-md-6" data-enable="{{ item.enable }}" id="plugin-{{ item.name.replace('.', '-') }}">
         <div class="row" style="min-height: 81px;">
-            <div class="col-xs-7">
+            <div class="col-xs-7" style="min-height: 126px;">
                 <div class="forum-icon hidden-xs">
                     <i class="material-{{ item.icon }}"></i>
                 </div>
@@ -31,7 +31,7 @@
                     功能描述 : {{ item.desc }}</div>
             </div>
             <div class="col-xs-5">
-                <div class="pull-right btn-group">
+                <div class="pull-right btn-group" style="margin-right: 6px;">
                 {% if item.can_enable %}
                 <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=enable&uri={{ item.install_uri }}" class="btn-json btn btn-enable" data-callback="enable_plugins">啟用</a>
                 <a href="/admin/plugin_manager/set.json?plugin={{ item.name }}&action=disable&uri={{ item.uninstall_uri }}" class="btn-json btn btn-disable" data-callback="disable_plugins">停用</a>
@@ -42,9 +42,9 @@
     </div>
     {% endfor %}
 </div>
-</div>
 {% endblock %}
-{% block layout_scripts -%}
+
+{% block page_scripts -%}
 <script>
     $(function(){
         $(".plugins-item").each(function(){
@@ -64,7 +64,7 @@
     }
     function enable_plugins(data){
         if (data.info == "done"){
-            toggle_class($("#plugin-" + data.plugin), true);
+            toggle_class($("#plugin-" + data.plugin.replace('.','-')), true);
             message.snackbar("已啟用");
         }
         if (data.info == "403"){
@@ -74,7 +74,7 @@
     }
     function disable_plugins(data){
         if (data.info == "done"){
-            toggle_class($("#plugin-" + data.plugin), false);
+            toggle_class($("#plugin-" + data.plugin.replace('.','-')), false);
             message.snackbar("已停用");
         }
         if (data.info == "403"){
