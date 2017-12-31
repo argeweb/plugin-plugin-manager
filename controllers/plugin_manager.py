@@ -6,7 +6,6 @@
 # Web: http://www.yooliang.com/
 # Date: 2015/7/12.
 
-from google.appengine.api import taskqueue
 from google.appengine.api import app_identity
 from argeweb import route_with, route_menu
 from argeweb import Controller, scaffold
@@ -22,29 +21,38 @@ class PluginManager(Controller):
     @route_with('/admin/plugin_manager/set.json')
     def admin_set_plugin(self):
         self.meta.change_view('json')
+        uri = ''
         plugin = self.params.get_string('plugin', '')
         action = self.params.get_string('action', '')
-        uri = self.params.get_string('uri', '')
+        uri_from_params = self.params.get_string('uri', '')
         enable_plugins_list = self.host_information.plugins_list
         prohibited_actions = self.prohibited_actions
+        plugin_name = plugin.replace('plugins.', '').replace('application.', '')
 
         if 'admin:'+plugin+':plugins_check' in prohibited_actions:
             self.context['data'] = {'info': '403', 'plugin': plugin}
             return
         if action == u'enable':
             if plugin not in enable_plugins_list:
+                uri = 'taskqueue:%s:%s:after_install' % (plugin_name, plugin_name)
                 enable_plugins_list.append(plugin)
         else:
             if plugin in enable_plugins_list:
+                uri = 'taskqueue:%s:%s:after_uninstall' % (plugin_name, plugin_name)
                 enable_plugins_list.remove(plugin)
-        if uri is not '':
-            try:
-                if uri.startswith('taskqueue:') is False:
-                    uri = 'taskqueue:' + uri
-                self.logging.info(uri)
-                taskqueue.add(url=self.uri(uri), params={'plugin': plugin, 'action': action})
-            except KeyError:
-                pass
+        if uri_from_params is not u'':
+            uri = uri_from_params
+        try:
+            if uri.startswith('taskqueue:') is False:
+                uri = 'taskqueue:' + uri
+            self.logging.info(uri)
+            self.fire(
+                event_name='create_taskqueue',
+                uri=uri,
+                params={'plugin': plugin, 'action': action}
+            )
+        except KeyError:
+            pass
         self.plugins.set_enable_plugins_to_db(self.server_name, self.namespace, enable_plugins_list)
 
         self.context['data'] = {'info': 'done', 'plugin': plugin}
@@ -53,7 +61,7 @@ class PluginManager(Controller):
     def allowed_app_ids(self):
         return [app_identity.get_application_id() + '.appspot.com']
 
-    @route_menu(list_name=u'super_user', text=u'模組管理', sort=1, group=u'模組管理')
+    @route_menu(list_name=u'super_user', group=u'模組管理', text=u'模組管理', sort=1)
     def admin_list(self):
         query = self.params.get_string('query', u'')
         scaffold.list(self)
